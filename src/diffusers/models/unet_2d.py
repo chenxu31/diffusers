@@ -168,7 +168,7 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         self,
         sample: torch.FloatTensor,
         timestep: Union[torch.Tensor, float, int],
-        return_dict: bool = True,
+        return_dict: bool = False,
     ) -> Union[UNet2DOutput, Tuple]:
         """r
         Args:
