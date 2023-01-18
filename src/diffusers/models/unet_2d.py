@@ -243,6 +243,6 @@ class UNet2DModel(ModelMixin, ConfigMixin):
             sample = sample / timesteps
 
         if not return_dict:
-            return (sample,)
+            return sample
 
         return UNet2DOutput(sample=sample)
