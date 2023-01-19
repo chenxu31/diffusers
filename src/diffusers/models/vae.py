@@ -141,9 +141,12 @@ class Decoder(nn.Module):
         layers_per_block=2,
         norm_num_groups=32,
         act_fn="silu",
+        tanh_out=False,
     ):
         super().__init__()
         self.layers_per_block = layers_per_block
+
+        self.tanh_out = tanh_out
 
         self.conv_in = nn.Conv2d(in_channels, block_out_channels[-1], kernel_size=3, stride=1, padding=1)
 
@@ -207,6 +210,9 @@ class Decoder(nn.Module):
         sample = self.conv_norm_out(sample)
         sample = self.conv_act(sample)
         sample = self.conv_out(sample)
+
+        if self.tanh_out:
+            sample = torch.tanh(sample)
 
         return sample
 
@@ -408,6 +414,7 @@ class VQModel(ModelMixin, ConfigMixin):
         sample_size: int = 32,
         num_vq_embeddings: int = 256,
         norm_num_groups: int = 32,
+        tanh_out: bool = False,
     ):
         super().__init__()
 
@@ -438,6 +445,7 @@ class VQModel(ModelMixin, ConfigMixin):
             layers_per_block=layers_per_block,
             act_fn=act_fn,
             norm_num_groups=norm_num_groups,
+            tanh_out=tanh_out,
         )
 
     def encode(self, x: torch.FloatTensor, return_dict: bool = True) -> VQEncoderOutput:
@@ -516,6 +524,7 @@ class AutoencoderKL(ModelMixin, ConfigMixin):
         latent_channels: int = 4,
         norm_num_groups: int = 32,
         sample_size: int = 32,
+        tanh_out: bool = False,
     ):
         super().__init__()
 
@@ -540,6 +549,7 @@ class AutoencoderKL(ModelMixin, ConfigMixin):
             layers_per_block=layers_per_block,
             norm_num_groups=norm_num_groups,
             act_fn=act_fn,
+            tanh_out=tanh_out,
         )
 
         self.quant_conv = torch.nn.Conv2d(2 * latent_channels, 2 * latent_channels, 1)
