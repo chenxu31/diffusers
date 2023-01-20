@@ -75,11 +75,13 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         attention_head_dim: int = 8,
         norm_num_groups: int = 32,
         norm_eps: float = 1e-5,
+        tanh_out: bool = False,
     ):
         super().__init__()
 
         self.sample_size = sample_size
         time_embed_dim = block_out_channels[0] * 4
+        self.tanh_out = tanh_out
 
         # input
         self.conv_in = nn.Conv2d(in_channels, block_out_channels[0], kernel_size=3, padding=(1, 1))
@@ -241,6 +243,9 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         if self.config.time_embedding_type == "fourier":
             timesteps = timesteps.reshape((sample.shape[0], *([1] * len(sample.shape[1:]))))
             sample = sample / timesteps
+
+        if self.tanh_out:
+            sample = torch.tanh(sample)
 
         if not return_dict:
             return (sample,)

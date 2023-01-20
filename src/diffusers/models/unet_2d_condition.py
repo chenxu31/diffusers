@@ -79,11 +79,13 @@ class UNet2DConditionModel(ModelMixin, ConfigMixin):
         norm_eps: float = 1e-5,
         cross_attention_dim: int = 1280,
         attention_head_dim: int = 8,
+        tanh_out: bool = False,
     ):
         super().__init__()
 
         self.sample_size = sample_size
         time_embed_dim = block_out_channels[0] * 4
+        self.tanh_out = tanh_out
 
         # input
         self.conv_in = nn.Conv2d(in_channels, block_out_channels[0], kernel_size=3, padding=(1, 1))
@@ -265,6 +267,9 @@ class UNet2DConditionModel(ModelMixin, ConfigMixin):
         sample = self.conv_norm_out(sample.float()).type(sample.dtype)
         sample = self.conv_act(sample)
         sample = self.conv_out(sample)
+
+        if self.tanh_out:
+            sample = torch.tanh(sample)
 
         if not return_dict:
             return (sample,)
