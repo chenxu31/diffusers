@@ -157,6 +157,7 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         model_output: Union[torch.FloatTensor, np.ndarray],
         timestep: int,
         sample: Union[torch.FloatTensor, np.ndarray],
+        predict_epsilon=True,
         eta: float = 0.0,
         use_clipped_model_output: bool = False,
         generator=None,
@@ -211,7 +212,10 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
 
         # 3. compute predicted original sample from predicted noise also called
         # "predicted x_0" of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
-        pred_original_sample = (sample - beta_prod_t ** (0.5) * model_output) / alpha_prod_t ** (0.5)
+        if predict_epsilon:
+            pred_original_sample = (sample - beta_prod_t ** (0.5) * model_output) / alpha_prod_t ** (0.5)
+        else:
+            pred_original_sample = model_output
 
         # 4. Clip "predicted x_0"
         if self.config.clip_sample:
